@@ -4,13 +4,13 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
-    MAIL_SERVER = 'smtp.googlemail.com'
+    MAIL_SERVER = 'smtp.qq.com'
     MAIL_PORT = 465
     MAIL_USE_SSL = True
     MAIL_USERNAME = 'yangchen1711@qq.com'
     MAIL_PASSWORD = 'orbvxljyyxmubfbe'
     FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky]'
-    FLASKY_MAIL_SENDER = 'Flasky Admin <flasky@yang.com>'
+    FLASKY_MAIL_SENDER = 'Flasky Admin <yangchen1711@qq.com>'
     FLASKY_ADMIN = 'yang'
 
     @staticmethod

@@ -1,0 +1,6 @@
+Dear {{ user.name }},
+Welcome to Flask!
+
+Confirm your account please click on the link:
+{{ url_for('auth.confirm', token=token, _external=True)}}
+
