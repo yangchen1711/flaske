@@ -6,6 +6,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="flasky" />
     <orderEntry type="module" module-name="flaskn" />
+    <orderEntry type="module" module-name="Vue" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_CONFIGURATION" value="Jinja2" />
