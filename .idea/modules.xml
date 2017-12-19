@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/../Vue/.idea/Vue.iml" filepath="$PROJECT_DIR$/../Vue/.idea/Vue.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/flaske.iml" filepath="$PROJECT_DIR$/.idea/flaske.iml" />
       <module fileurl="file://$PROJECT_DIR$/../flaskn/.idea/flaskn.iml" filepath="$PROJECT_DIR$/../flaskn/.idea/flaskn.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../flasktest/.idea/flasktest.iml" filepath="$PROJECT_DIR$/../flasktest/.idea/flasktest.iml" />
       <module fileurl="file://$PROJECT_DIR$/../flasky/.idea/flasky.iml" filepath="$PROJECT_DIR$/../flasky/.idea/flasky.iml" />
     </modules>
   </component>

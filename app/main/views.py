@@ -1,31 +1,43 @@
+# -*- coding:utf-8
 from flask import render_template, session, redirect, url_for, current_app, flash
 from .. import db
-from ..models import User, Role
+from ..models import User, Role, Permissions, Post
 from ..email import send_email
 from . import main
-from .forms import NameForm, EditProfileForm, EditProfileAdminForm
+from .forms import NameForm, EditProfileForm, EditProfileAdminForm, PostForm
 from flask_login import login_required, current_user
 from ..decorators import admin_required
 
+
 @main.route('/', methods=['GET', 'POST'])
 def index():
-    form = NameForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.name.data).first()
-        if user is None:
-            user = User(username=form.name.data)
-            db.session.add(user)
-            session['known'] = False
-            # if current_app.config['FLASKY_ADMIN']:
-            #     send_email(current_app.config['FLASKY_ADMIN'], 'New User',
-            #                'mail/new_user', user=user)
-        else:
-            session['known'] = True
-        session['name'] = form.name.data
+    # form = NameForm()
+    # if form.validate_on_submit():
+    #     user = User.query.filter_by(username=form.name.data).first()
+    #     if user is None:
+    #         user = User(username=form.name.data)
+    #         db.session.add(user)
+    #         session['known'] = False
+    #         # if current_app.config['FLASKY_ADMIN']:
+    #         #     send_email(current_app.config['FLASKY_ADMIN'], 'New User',
+    #         #                'mail/new_user', user=user)
+    #     else:
+    #         session['known'] = True
+    #     session['name'] = form.name.data
+    #     return redirect(url_for('.index'))
+    # return render_template('index.html',
+    #                        form=form, name=session.get('name'),
+    #                        known=session.get('known', False))
+    form = PostForm()
+    if current_user.can(Permissions.WRITE_ARTICLES) and \
+            form.validate_on_submit():
+        post = Post(body=form.body.data, author=current_user._get_current_object())
+        db.session.add(post)
         return redirect(url_for('.index'))
-    return render_template('index.html',
-                           form=form, name=session.get('name'),
-                           known=session.get('known', False))
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    # 此处与教程不同，不确定模板中能不能调用函数带的参数
+    permission = current_user.can(Permissions.WRITE_ARTICLES)
+    return render_template('index.html', form=form, posts=posts, permission=permission)
 
 
 @main.route('/user/<username>')
@@ -33,7 +45,9 @@ def user(username):
     user = User.query.filter_by(username=username).first_or_404()
     # if user is None:
     #     abort(404)
-    return render_template('user.html', user=user)
+    posts = user.posts.order_by(Post.timestamp.desc()).all()
+
+    return render_template('user.html', user=user, posts=posts)
 
 
 @main.route('/edit-profile', methods=['GET', 'POST'])
