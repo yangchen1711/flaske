@@ -9,7 +9,7 @@ from markdown import markdown
 import bleach
 
 
-class Permissions:
+class Permissions(object):
     FOLLOW = 0x01
     COMMENT = 0x02
     WRITE_ARTICLES = 0x04
@@ -53,6 +53,13 @@ class Role(db.Model):
         return '<Role %r>' % self.name
 
 
+class Follow(db.Model):
+    __tablename__ = 'follows'
+    follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class User(UserMixin, db.Model):
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -78,6 +85,12 @@ class User(UserMixin, db.Model):
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
 
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+    followed = db.relationship('Follow', foreign_keys=[Follow.follower_id], backref=db.backref('follower',
+                                                                                               lazy='joined'),
+                               lazy='dynamic', cascade='all, delete-orphan')
+    followers = db.relationship('Follow', foreign_keys=[Follow.followed_id], backref=db.backref('followed',
+                                                                                                lazy='joined'),
+                                lazy='joined', cascade='all, delete-orphan')
 
     def ping(self):
         self.last_seen = datetime.utcnow()
@@ -93,6 +106,11 @@ class User(UserMixin, db.Model):
     @password.setter
     def password(self, password):
         self.password_hash = generate_password_hash(password)
+
+    @property
+    def followed_posts(self):
+        return Post.query.join(Follow, Follow.followed_id == Post.author_id) \
+                .filter(Follow.follower_id == self.id)
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
@@ -144,6 +162,26 @@ class User(UserMixin, db.Model):
 
 
 
+    def follow(self, user):
+        if not self.is_following(user):
+            f = Follow(follower=self, followed=user)
+            db.session.add(f)
+
+    def unfollow(self, user):
+        f = self.followed.filter_by(followed_id=user.id).first()
+        if f:
+            db.session.delete(f)
+
+    def is_following(self, user):
+        return self.followed.filter_by(followed_id=user.id).first() is not None
+
+    def is_followed(self, user):
+        return self.followers.filter_by(follower_id=user.id).first() is not None
+
+
+
+
+
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permimissions):
         return False
@@ -181,6 +219,10 @@ class Post(db.Model):
                         'i', 'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2', 'h3', 'p']
         target.body_html = bleach.linkify(bleach.clean(markdown(value, output_format='html'), tags=allowed_tags, strip=True))
 db.event.listen(Post.body, 'set', Post.on_changed_body)
+
+
+
+
 
 
 
