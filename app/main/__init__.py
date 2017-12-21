@@ -8,5 +8,5 @@ from ..models import Permissions
 
 @main.app_context_processor
 def inject_permissions():
-    return dict(Permission=Permissions)
+    return dict(Permissions=Permissions)
 
